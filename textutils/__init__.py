@@ -66,9 +66,9 @@ UNICODE_MAP = {
     255 : u"Y", # ñ
 }
 
-LETTER_OR_NUMBER = re.compile(u'[^a-zA-Z0-9 ÀÁÂÃÄÅàáâãäåÒÓÔÕÖØòóôõöøÈÉÊËèéêëÇçÌÍÎÏìíîïÙÚÛÜùúûüÿÑñ]+',re.UNICODE)
+LETTER_OR_NUMBER = re.compile(u'[^a-zA-Z0-9 ÀÁÂÃÄÅàáâãäåÒÓÔÕÖØòóôõöøÈÉÊËèéêëÇçÌÍÎÏìíîïÙÚÛÜùúûüÿÑñ_-]+',re.UNICODE)
 
-def sanitize(subject,allow_spaces=True,space_replacement='-',remap_unicode=False):
+def sanitize(subject, allow_spaces=True, space_replacement='-', remap_unicode=False):
   """
   Sanitizes a string removing all non word characters.
 
@@ -77,18 +77,27 @@ def sanitize(subject,allow_spaces=True,space_replacement='-',remap_unicode=False
     - allow_spaces: wheter remove or keep spaces
     - space_replacement: if allow_spaces is set to False, the will be replaced by this 
     - remap_unicode: wheter transliteration should be executed (change áéí..aei)
+  Returns
+    - Sanitized string
+
+  @TODO
+    - convert string to unicode
+    - accept underscores and dashes between words
   """
   assert isinstance(subject, unicode), 'Subject must be unicode'
-  subject = subject.expandtabs().lower()
+  subject = subject.expandtabs()
 
   subject = LETTER_OR_NUMBER.sub('',subject)
-  subject = re.sub(' +',' ',subject)
+  subject = re.sub(' {2,}',' ',subject)
+  subject = re.sub('-{2,}','-',subject)
+  subject = re.sub('_{2,}','_',subject)
 
   if remap_unicode == True:
     subject = subject.translate(UNICODE_MAP)
 
   if allow_spaces == False:
     subject = subject.replace(' ',space_replacement)
+    subject = re.sub('%s{2,}' % space_replacement, space_replacement, subject)
 
   return subject
 
