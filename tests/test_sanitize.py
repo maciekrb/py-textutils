@@ -1,7 +1,10 @@
 #-*- coding: utf-8 -*-
 
 import unittest
-from textutils import sanitize
+from textutils import (
+  sanitize,
+  sanitize_email
+)
 
 
 class TestSanitize(unittest.TestCase):
@@ -51,3 +54,32 @@ class TestSanitize(unittest.TestCase):
     result = sanitize(subject, allow_spaces=False, space_replacement='',
                       remap_unicode=True)
     self.assertEqual(u'testaeiouaeiou', result)
+
+
+class TestSanitizeEmail(unittest.TestCase):
+
+  def test_email_lowercasing(self):
+    subject = u' soMe@uGlYEmAiL.cOm '
+    result = sanitize_email(subject)
+    self.assertEqual(u'some@uglyemail.com', result)
+
+  def test_email_space_removal(self):
+    subject = u' so Me@uGlY  EmAiL.cOm  '
+    result = sanitize_email(subject)
+    self.assertEqual(u'some@uglyemail.com', result)
+
+  def test_email_raises_exception_on_invalid_email(self):
+
+    # Test without "@"
+    subject = u' so MeuGlY  EmAiL.cOm  '
+    with self.assertRaises(ValueError) as ctx:
+      sanitize_email(subject)
+
+    self.assertEqual("Invalid email address", ctx.exception.message)
+
+    # Test without "."
+    subject = u' so Me@uGlY  EmAiLcOm  '
+    with self.assertRaises(ValueError) as ctx:
+      sanitize_email(subject)
+
+    self.assertEqual("Invalid email address", ctx.exception.message)

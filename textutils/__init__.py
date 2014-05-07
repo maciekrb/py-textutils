@@ -66,10 +66,13 @@ UNICODE_MAP = {
     255: u"Y",  # ñ
 }
 
-LONEXP = u'[^a-zA-Z0-9 ÀÁÂÃÄÅàáâãäåÒÓÔÕÖØòóôõöøÈÉÊËèéêëÇçÌÍÎÏìíîïÙÚÛÜùúûüÿÑñ_-]+'
+LONEXP = (
+  u'[^a-zA-Z0-9 ÀÁÂÃÄÅàáâãäåÒÓÔÕÖØòóôõöøÈÉÊËèéêëÇçÌÍÎÏìíîïÙÚÛÜùúûüÿÑñ_-]+'
+)
 LETTER_OR_NUMBER = re.compile(LONEXP, re.UNICODE)
 SEPARATORS = (u' ', u'-', u'_')
 SPACES = re.compile(u'\s+')
+EMAIL_REGEXP = re.compile('\w+[.|\w]\w+@\w+[.]\w+[.|\w+]\w+')
 
 
 def sanitize(subject, allow_spaces=True, space_replacement=u'-',
@@ -109,6 +112,25 @@ def sanitize(subject, allow_spaces=True, space_replacement=u'-',
 
 def randomToken():
   return str(uuid.uuid4()).replace('-', '_')
+
+
+def sanitize_email(email):
+  """
+  Sanitizes and lowercases an email address
+  Args:
+    - email str email address to sanitize
+  Returns
+    Sanitized, lowercased email address
+  Raises
+    ValueError if resulting sanitized string is not a valid email
+  """
+  email = email.translate(UNICODE_MAP)
+  email = email.lower()
+  email = re.sub(SPACES, '', email)
+  if not EMAIL_REGEXP.match(email):
+    raise ValueError("Invalid email address")
+
+  return email
 
 
 def randomString(size=32, chars="uppercase,lowercase,digits"):
