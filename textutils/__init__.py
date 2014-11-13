@@ -91,11 +91,16 @@ def sanitize(subject, allow_spaces=True, space_replacement=u'-',
     - Sanitized string
 
   @TODO
-    - convert string to unicode
     - accept underscores and dashes between words
   """
-  subject = unicode(subject)
-  subject = subject.expandtabs()
+
+  if not subject:
+    return u''
+
+  if not isinstance(subject, unicode):
+    subject = unicode(subject)
+
+  subject = subject.expandtabs().lower()
 
   subject = LETTER_OR_NUMBER.sub(u'', subject)
   for sep in SEPARATORS:
